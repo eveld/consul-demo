@@ -1,0 +1,104 @@
+version: "2"
+containers:
+- name: api
+  image: eveld/emojify-api:v0.7.4
+  shell: /bin/bash
+  ports:
+  - 9090
+  - 8600
+  - 8300
+  - 8301
+  - 8302
+  environment:
+    AUTHN_DISABLE: "true"
+    CACHE_ADDRESS: localhost:8005
+    FACEBOX_ADDRESS: localhost:8003
+    LOG_FILE: /var/log/emojify.log
+    STATSD_ADDRESS: localhost:9125
+  memory: 256
+- name: ingress
+  image: eveld/emojify-ingress:v0.0.1
+  shell: /bin/bash
+  ports:
+  - 80
+  - 8300
+  - 8301
+  - 8302
+  - 8600
+  memory: 256
+- name: website
+  image: eveld/emojify-website:v0.7.0
+  shell: /bin/bash
+  ports:
+  - 80
+  - 8300
+  - 8301
+  - 8302
+  - 8600
+  memory: 256
+- name: facebox
+  image: eveld/emojify-facedetection:v0.10.0
+  shell: /bin/bash
+  ports:
+  - 8080
+  - 8300
+  - 8301
+  - 8302
+  - 8600
+  environment:
+    MIN_NEIGHBORS: "14"
+    SCALE_FACTOR: "1.03"
+    STATSD_ADDRESS: localhost:9125
+  memory: 256
+- name: cache
+  image: eveld/emojify-cache:v0.4.3
+  shell: /bin/bash
+  ports:
+  - 9090
+  - 8300
+  - 8301
+  - 8302
+  - 8600
+  environment:
+    CACHE_MAX_LIFE: 30m
+    STATSD_ADDRESS: localhost:9125
+  memory: 256
+- name: consul-2
+  image: eveld/consul:v1.4.4-dev
+  shell: /bin/bash
+  ports:
+  - 8300
+  - 8301
+  - 8302
+  - 8500
+  - 8502
+  - 8600
+  environment:
+    CONSUL_BIND_INTERFACE: eth0
+  memory: 128
+- name: consul-1
+  image: eveld/consul:v1.4.4-dev
+  shell: /bin/bash
+  ports:
+  - 8300
+  - 8301
+  - 8302
+  - 8500
+  - 8502
+  - 8600
+  environment:
+    CONSUL_BIND_INTERFACE: eth0
+  memory: 128
+- name: consul-3
+  image: eveld/consul:v1.4.4-dev
+  shell: /bin/bash
+  ports:
+  - 8300
+  - 8301
+  - 8302
+  - 8500
+  - 8502
+  - 8600
+  environment:
+    CONSUL_BIND_INTERFACE: eth0
+  memory: 128

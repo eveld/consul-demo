@@ -1,0 +1,18 @@
+FROM nicholasjackson/emojify-cache:v0.4.3
+
+RUN apk add --update bash supervisor curl vim
+RUN sed -i 's/\/bin\/ash/\/bin\/bash/g' /etc/passwd
+
+RUN mkdir -p /etc/supervisor.d/
+COPY cache.ini /etc/supervisor.d/
+
+RUN mkdir -p /etc/consul
+COPY client.hcl /etc/consul/
+
+COPY consul /usr/local/bin/consul
+COPY envoy /usr/local/bin/envoy
+
+RUN sed -i 's/;nodaemon=false/nodaemon=true/g' /etc/supervisord.conf
+
+ENTRYPOINT ["/usr/bin/supervisord"]
+CMD ["-c", "/etc/supervisord.conf"]

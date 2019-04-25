@@ -1,0 +1,23 @@
+#!/bin/sh
+IP=$(getent ahosts $HOSTNAME | head -n 1 | cut -d ' ' -f 1)
+
+cat <<EOF > /etc/consul/server.hcl
+data_dir = "/tmp/consul"
+log_level = "DEBUG"
+server = true
+retry_join = ["consul-1", "consul-2", "consul-3"]
+
+bind_addr = "0.0.0.0"
+client_addr = "0.0.0.0"
+advertise_addr = "$IP"
+
+connect {
+    enabled = true
+}
+
+ports {
+    grpc = 8502
+}
+EOF
+
+/usr/bin/supervisorctl restart consul
