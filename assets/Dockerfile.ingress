@@ -1,9 +1,10 @@
-FROM nginx
+FROM nginx:alpine
 
-RUN apt-get update && \
-    apt-get install -y bash supervisor curl vim
+RUN apk add --update bash supervisor curl vim
+RUN sed -i 's/\/bin\/ash/\/bin\/bash/g' /etc/passwd
 
-COPY ingress.conf /etc/supervisor/conf.d/
+RUN mkdir -p /etc/supervisor.d/
+COPY ingress.ini /etc/supervisor.d/
 
 COPY nginx.conf /etc/nginx/nginx.conf
 
@@ -13,4 +14,7 @@ COPY client.hcl /etc/consul/
 COPY consul /usr/local/bin/consul
 COPY envoy /usr/local/bin/envoy
 
+RUN sed -i 's/;nodaemon=false/nodaemon=true/g' /etc/supervisord.conf
+
 ENTRYPOINT ["/usr/bin/supervisord"]
+CMD ["-c", "/etc/supervisord.conf"]

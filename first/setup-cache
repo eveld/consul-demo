@@ -1,5 +1,5 @@
 #!/bin/bash
-cat <<EOF > /root/service.hcl
+cat <<EOF > /etc/consul/service.hcl
 services {
     id   = "emojify-cache"
     name = "emojify-cache"
@@ -21,3 +21,5 @@ services {
     }                                                                             
 }
 EOF
+
+/usr/local/bin/consul reload

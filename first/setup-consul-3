@@ -20,4 +20,4 @@ ports {
 }
 EOF
 
-/usr/bin/supervisorctl restart consul
+/usr/bin/supervisorctl start consul

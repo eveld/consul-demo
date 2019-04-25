@@ -1,5 +1,5 @@
 #!/bin/bash
-cat <<EOF > /root/service.hcl
+cat <<EOF > /etc/consul/service.hcl
 services {
     id   = "emojify-ingress"
     name = "emojify-ingress"
@@ -40,3 +40,5 @@ services {
     }
 }
 EOF
+
+/usr/local/bin/consul reload

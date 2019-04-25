@@ -1,5 +1,31 @@
 version: "2"
 containers:
+- name: consul-1
+  image: eveld/consul:v1.4.4-dev
+  shell: /bin/bash
+  ports:
+  - 8300
+  - 8301
+  - 8302
+  - 8500
+  - 8502
+  - 8600
+  environment:
+    CONSUL_BIND_INTERFACE: eth0
+  memory: 128
+- name: consul-3
+  image: eveld/consul:v1.4.4-dev
+  shell: /bin/bash
+  ports:
+  - 8300
+  - 8301
+  - 8302
+  - 8500
+  - 8502
+  - 8600
+  environment:
+    CONSUL_BIND_INTERFACE: eth0
+  memory: 128
 - name: api
   image: eveld/emojify-api:v0.7.4
   shell: /bin/bash
@@ -64,32 +90,6 @@ containers:
     STATSD_ADDRESS: localhost:9125
   memory: 256
 - name: consul-2
-  image: eveld/consul:v1.4.4-dev
-  shell: /bin/bash
-  ports:
-  - 8300
-  - 8301
-  - 8302
-  - 8500
-  - 8502
-  - 8600
-  environment:
-    CONSUL_BIND_INTERFACE: eth0
-  memory: 128
-- name: consul-1
-  image: eveld/consul:v1.4.4-dev
-  shell: /bin/bash
-  ports:
-  - 8300
-  - 8301
-  - 8302
-  - 8500
-  - 8502
-  - 8600
-  environment:
-    CONSUL_BIND_INTERFACE: eth0
-  memory: 128
-- name: consul-3
   image: eveld/consul:v1.4.4-dev
   shell: /bin/bash
   ports:

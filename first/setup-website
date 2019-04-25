@@ -1,5 +1,5 @@
 #!/bin/bash
-cat <<EOF > /root/service.hcl
+cat <<EOF > /etc/consul/service.hcl
 services {
     id   = "emojify-website"
     name = "emojify-website"
@@ -22,3 +22,5 @@ services {
     }
 }
 EOF
+
+/usr/local/bin/consul reload
