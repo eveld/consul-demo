@@ -1,9 +1,11 @@
-FROM nicholasjackson/emojify-website:v0.7.0
+FROM prom/statsd-exporter:latest
+FROM nicholasjackson/emojify-website:v0.8.0
 
-RUN apt-get update && \
-    apt-get install -y bash supervisor curl vim
+RUN apk add --update bash supervisor curl vim
+RUN sed -i 's/\/bin\/ash/\/bin\/bash/g' /etc/passwd
 
-COPY website.conf /etc/supervisor/conf.d/
+RUN mkdir -p /etc/supervisor.d/
+COPY website.ini /etc/supervisor.d/
 
 COPY env.js /usr/share/nginx/html/config/env.js
 
@@ -13,4 +15,9 @@ COPY client.hcl /etc/consul/
 COPY consul /usr/local/bin/consul
 COPY envoy /usr/local/bin/envoy
 
+RUN sed -i 's/;nodaemon=false/nodaemon=true/g' /etc/supervisord.conf
+
+COPY --from=0 /bin/statsd_exporter /bin/statsd_exporter
+
 ENTRYPOINT ["/usr/bin/supervisord"]
+CMD ["-c", "/etc/supervisord.conf"]

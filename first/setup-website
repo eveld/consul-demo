@@ -21,6 +21,15 @@ services {
         }
     }
 }
+
+services {
+  name = "statsd-exporter"
+  port = 9102
+
+  tags = ["scrape"]
+}
 EOF
 
 /usr/local/bin/consul reload
+
+/usr/bin/supervisorctl start envoy

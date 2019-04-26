@@ -23,4 +23,13 @@ ports {
 }
 EOF
 
+cat <<EOF > /etc/consul/service.hcl
+services {
+  name = "statsd-exporter"
+  port = 9102
+
+  tags = ["scrape"]
+}
+EOF
+
 /usr/bin/supervisorctl start consul

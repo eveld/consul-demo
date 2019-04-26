@@ -1,9 +1,9 @@
 slug: consul-demo
 id: 8wyatk2hvuyx
 type: track
-title: Consul demo
-teaser: Consul demo
-description: Consul demo
+title: Service Mesh Observability
+teaser: L7 Observability into your Service Mesh with Consul Connect
+description: L7 Observability into your Service Mesh with Consul Connect.
 icon: https://storage.googleapis.com/instruqt-frontend/assets/hashicorp/tracks/consul.png
 tags:
 - ""
@@ -12,7 +12,7 @@ developers:
 - jackson.nic@gmail.com
 - todd@hashicorp.com
 - eveld@hashicorp.com
-private: true
+private: false
 published: true
 challenges:
 - slug: first
@@ -21,13 +21,10 @@ challenges:
   title: First
   teaser: First
   assignment: First
+  notes:
+  - type: video
+    url: https://www.youtube.com/embed/KZIu33sbwQQ
   tabs:
-  - title: cache
-    type: terminal
-    hostname: cache
-  - title: api
-    type: terminal
-    hostname: api
   - title: Consul 1
     type: terminal
     hostname: consul-1
@@ -37,11 +34,12 @@ challenges:
   - title: Consul 3
     type: terminal
     hostname: consul-3
-  - title: Consul UI
-    type: service
-    hostname: consul-1
-    path: /ui
-    port: 8500
+  - title: api
+    type: terminal
+    hostname: api
+  - title: cache
+    type: terminal
+    hostname: cache
   - title: ingress
     type: terminal
     hostname: ingress
@@ -55,6 +53,19 @@ challenges:
     type: service
     hostname: ingress
     port: 80
+  - title: Consul UI
+    type: service
+    hostname: consul-1
+    path: /ui
+    port: 8500
+  - title: Grafana
+    type: service
+    hostname: prometheus
+    port: 3000
+  - title: Prometheus
+    type: service
+    hostname: prometheus
+    port: 9090
   difficulty: basic
   timelimit: 30000
-checksum: "11430984432902674653"
+checksum: "15094457187303049325"

@@ -1,5 +1,12 @@
 version: "2"
 containers:
+- name: prometheus
+  image: eveld/prometheus:v2.8.1
+  shell: /bin/bash
+  ports:
+  - 9090
+  - 3000
+  memory: 256
 - name: consul-1
   image: eveld/consul:v1.4.4-dev
   shell: /bin/bash
@@ -10,6 +17,7 @@ containers:
   - 8500
   - 8502
   - 8600
+  - 9102
   environment:
     CONSUL_BIND_INTERFACE: eth0
   memory: 128
@@ -23,6 +31,7 @@ containers:
   - 8500
   - 8502
   - 8600
+  - 9102
   environment:
     CONSUL_BIND_INTERFACE: eth0
   memory: 128
@@ -35,6 +44,7 @@ containers:
   - 8300
   - 8301
   - 8302
+  - 9102
   environment:
     AUTHN_DISABLE: "true"
     CACHE_ADDRESS: localhost:8005
@@ -51,6 +61,7 @@ containers:
   - 8301
   - 8302
   - 8600
+  - 9102
   memory: 256
 - name: website
   image: eveld/emojify-website:v0.7.0
@@ -61,6 +72,7 @@ containers:
   - 8301
   - 8302
   - 8600
+  - 9102
   memory: 256
 - name: facebox
   image: eveld/emojify-facedetection:v0.10.0
@@ -71,6 +83,7 @@ containers:
   - 8301
   - 8302
   - 8600
+  - 9102
   environment:
     MIN_NEIGHBORS: "14"
     SCALE_FACTOR: "1.03"
@@ -85,6 +98,7 @@ containers:
   - 8301
   - 8302
   - 8600
+  - 9102
   environment:
     CACHE_MAX_LIFE: 30m
     STATSD_ADDRESS: localhost:9125
@@ -99,6 +113,14 @@ containers:
   - 8500
   - 8502
   - 8600
+  - 9102
   environment:
     CONSUL_BIND_INTERFACE: eth0
+  memory: 128
+- name: load-test
+  image: nicholasjackson/emojify-traffic:v0.2.1
+  environment:
+    BASE_URI: http://ingress
+    SHOW_PROGRESS: "false"
+    USERS: "5"
   memory: 128

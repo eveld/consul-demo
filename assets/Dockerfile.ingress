@@ -1,3 +1,4 @@
+FROM prom/statsd-exporter:latest
 FROM nginx:alpine
 
 RUN apk add --update bash supervisor curl vim
@@ -15,6 +16,8 @@ COPY consul /usr/local/bin/consul
 COPY envoy /usr/local/bin/envoy
 
 RUN sed -i 's/;nodaemon=false/nodaemon=true/g' /etc/supervisord.conf
+
+COPY --from=0 /bin/statsd_exporter /bin/statsd_exporter
 
 ENTRYPOINT ["/usr/bin/supervisord"]
 CMD ["-c", "/etc/supervisord.conf"]
