@@ -1,0 +1,8 @@
+#!/bin/bash
+RUNNING=$(supervisorctl status | grep RUNNING | wc -l)
+if [ $RUNNING -ne 2 ]; then 
+    fail-message "Not all services are running on the consul-3 node"
+    exit 1
+fi
+
+exit 0

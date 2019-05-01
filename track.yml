@@ -3,10 +3,24 @@ id: 8wyatk2hvuyx
 type: track
 title: Service Mesh Observability
 teaser: L7 Observability into your Service Mesh with Consul Connect
-description: L7 Observability into your Service Mesh with Consul Connect.
+description: "By default Envoy is only going to operate on L4, while that may be useful
+  we will not see rich information which will enhance our awareness of our systems
+  stability.\n\nFor example, with L4 we will see requests but only success or failure,
+  and a failure is only going to be reported if a connection is terminated unexpectedly.
+  When your APIs or websites are reporting failures they will almost always terminate
+  the request correctly. What they are actually doing is using L7 and the HTTP protocol,
+  this carries with it HTTP status codes which indicate the real status of the request.
+  You will return a status 200 when a request is successful, a 404 if something is
+  not found, and 5xx when the service has an unexpected error. \n\nMonitoring these
+  codes is essential to understanding your application, however you need to enable
+  some additional configuration in Envoy so that it understands that your app is talking
+  L7."
 icon: https://storage.googleapis.com/instruqt-frontend/assets/hashicorp/tracks/consul.png
 tags:
-- ""
+- connect
+- consul
+- observability
+- service mesh
 owner: hashicorp
 developers:
 - jackson.nic@gmail.com
@@ -15,57 +29,233 @@ developers:
 private: false
 published: true
 challenges:
-- slug: first
+- slug: inspect-cluster
   id: kvjp33s4nakc
   type: challenge
-  title: First
-  teaser: First
-  assignment: First
+  title: Inspecting the cluster
+  teaser: Make sure everything is running properly.
+  assignment: "In one of the terminals, check if the cluster has been formed correctly
+    by running `consul members`.\n\nThere should be 8 nodes with status **alive**:
+    \  \n1. consul-1   \n2. consul-2   \n3. consul-3   \n4. api   \n5. cache   \n6.
+    facebox   \n7. ingress   \n8. website   \n\nIf for some reason one of the nodes
+    did not come up, check if supervisord has started all services correctly by running
+    `supervisorctl status` on the node of the missing service.\n\nIf everything is
+    running properly, hit **check** to proceed."
   notes:
+  - type: text
+    contents: "Please wait while we create your **sandboxed environment**. \n\nThis
+      environment will be populated with a 3 node **Consul cluster** and a **three-tier
+      application** that is connected and secured with a **Service Mesh**."
+  - type: text
+    contents: "The three-tier application consists of **5 components**:\n\n1. **Ingress**
+      - The proxy that routes all traffic to / to the website and /api to the API
+      server.\n\n2. **Website** - The frontend application.\n\n3. **API** - The service
+      that checks if an image is available in cache, or calls the facebox service
+      to emojify the image. \n\n4. **Cache** - A cache service that stores emojified
+      images.\n\n5. **Facebox** - The service that detects faces and places emoji's
+      on them."
+  - type: text
+    contents: |-
+      We will be configuring **Consul Connect** and **Envoy** to send L7 metrics to **Prometheus** and then create dashboards in **Grafana** to view them.
+
+      To learn more about Consul Connect and it's internals, watch the **video** in the next note.
   - type: video
     url: https://www.youtube.com/embed/KZIu33sbwQQ
   tabs:
-  - title: Consul 1
-    type: terminal
-    hostname: consul-1
-  - title: Consul 2
-    type: terminal
-    hostname: consul-2
   - title: Consul 3
     type: terminal
     hostname: consul-3
-  - title: api
-    type: terminal
-    hostname: api
   - title: cache
     type: terminal
     hostname: cache
-  - title: ingress
-    type: terminal
-    hostname: ingress
-  - title: website
-    type: terminal
-    hostname: website
   - title: facebox
     type: terminal
     hostname: facebox
+  - title: website
+    type: terminal
+    hostname: website
+  - title: api
+    type: terminal
+    hostname: api
+  - title: ingress
+    type: terminal
+    hostname: ingress
+  - title: Consul 2
+    type: terminal
+    hostname: consul-2
+  - title: Consul 1
+    type: terminal
+    hostname: consul-1
+  difficulty: basic
+  timelimit: 600
+- slug: trying-emojify
+  id: 8xlczufueorq
+  type: challenge
+  title: Emojifying
+  teaser: Try out the Emojify application.
+  assignment: |-
+    As soon as all the services and the sidecar proxies are healthy, the Emojify application should work.
+
+    Check out the Consul UI to check if the sidecar proxy for each of the Emojify services is up and running.
+
+    Then try out the Emojify application by emojify-ing `https://i.ytimg.com/vi/qlwp0mHFLHU/maxresdefault.jpg`.
+  notes:
+  - type: text
+    contents: what does emojify look like? (architecture)
+  - type: text
+    contents: how does it work?
+  - type: text
+    contents: see the service status in consul
+  - type: text
+    contents: sidecar proxies also registered in consul with health
+  tabs:
+  - title: Consul UI
+    type: service
+    hostname: consul-1
+    path: /ui/
+    port: 8500
+  - title: API
+    type: terminal
+    hostname: api
+  - title: Cache
+    type: terminal
+    hostname: cache
+  - title: Website
+    type: terminal
+    hostname: website
+  - title: Facebox
+    type: terminal
+    hostname: facebox
+  - title: Ingress
+    type: terminal
+    hostname: ingress
   - title: Emojify
     type: service
     hostname: ingress
     port: 80
-  - title: Consul UI
-    type: service
-    hostname: consul-1
-    path: /ui
-    port: 8500
+  difficulty: basic
+  timelimit: 600
+- slug: metrics-sink
+  id: d5m1h86p5yto
+  type: challenge
+  title: Getting insights
+  teaser: Get L3/L4 observability for our services.
+  assignment: "To get insights in how the services are performing, we need to add
+    a metrics sink to the Envoy bootstrap configuration.\n\nEach of the nodes has
+    a Consul service definition located at `/etc/consul/service.hcl`. \nFor the API
+    service, we are going to edit this file and add a metrics sink.\n\nAdd a `config`
+    block to the `proxy` definition of the sidecar_service, with `envoy_dogstatsd_url`
+    set to `udp://127.0.0.1:9125`.\nThen reload the Consul agent by running `consul
+    reload`, so it will pick up the new service defintion.\n\nIn order for the new
+    Envoy configuration to be generated we have to restart the proxy by running `supervisorctl
+    restart envoy`. \n\nThis will run the following command in the background:   \n```\nconsul
+    connect envoy \\\n  -sidecar-for emojify-api\n```\n\nOnce the service definition
+    is reloaded and the Envoy proxy has restarted, metrics should start coming in
+    to Prometheus and Grafana. To check the metrics, go to the Grafana tab and on
+    the Explore page, and log in with admin/admin.\n\nThen in the explore tab add
+    the query:\n```\nrate(envoy_cluster_internal_upstream_rq{local_cluster=\"emojify-api\"}[30s])\n```
+    \n\nWhen you run the query, a graph should appear."
+  notes:
+  - type: text
+    contents: What is observability?
+  - type: text
+    contents: what kind of insights do you get with envoy?
+  - type: text
+    contents: |-
+      what are:
+
+      cluster
+
+      listener
+
+      connection
+
+      request
+  - type: text
+    contents: |-
+      upstream
+
+      downstream
+  - type: text
+    contents: |-
+      logging architecture with statsd sidecar sending metrics to prometheus
+
+      displayed in grafana
+  tabs:
+  - title: Editor
+    type: code
+    hostname: api
+    path: /etc/consul/service.hcl
+  - title: API
+    type: terminal
+    hostname: api
   - title: Grafana
     type: service
-    hostname: prometheus
+    hostname: monitoring
+    path: /explore?left=["now-5m","now","Prometheus",{},{"ui":[true,true,true,"none"]}]
+    port: 3000
+  difficulty: basic
+  timelimit: 1200
+- slug: l7-observability
+  id: wbx9gp1ilkmd
+  type: challenge
+  title: L7 observability
+  teaser: Add L7 observability
+  assignment: |-
+    To get more insight into how our services are performing, we will enable L7 observability metrics in Envoy.
+
+    To do this, we need to add the `protocol` field to the `proxy config` and create a `config` block with the `protocol` field in each of the `upstreams`.
+
+    When we set the protocol field to `http`, Envoy will start emitting L7 metrics.
+  notes:
+  - type: text
+    contents: difference between L3/4 and L7
+  - type: text
+    contents: Why are L7 metrics useful?
+  - type: text
+    contents: How to enable L7 metrics?
+  - type: text
+    contents: What metrics does Envoy send on L7?
+  tabs:
+  - title: API
+    type: terminal
+    hostname: api
+  - title: Editor
+    type: code
+    hostname: api
+    path: /etc/consul/service.hcl
+  - title: Grafana
+    type: service
+    hostname: monitoring
+    path: /explore?left=["now-5m","now","Prometheus",{},{"ui":[true,true,true,"none"]}]
     port: 3000
   - title: Prometheus
+    type: terminal
+    hostname: monitoring
+  - title: Prom
     type: service
-    hostname: prometheus
+    hostname: monitoring
     port: 9090
   difficulty: basic
-  timelimit: 30000
-checksum: "15094457187303049325"
+  timelimit: 12000
+- slug: explore
+  id: 2oubohrpxlhw
+  type: challenge
+  title: Explore
+  teaser: explore
+  assignment: Explore
+  tabs:
+  - title: Grafana
+    type: service
+    hostname: monitoring
+    port: 3000
+  - title: Shell
+    type: terminal
+    hostname: monitoring
+  - title: Prometheus
+    type: service
+    hostname: monitoring
+    port: 9090
+  difficulty: basic
+  timelimit: 25000
+checksum: "3490131684617257192"

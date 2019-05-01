@@ -1,0 +1,36 @@
+#!/bin/bash
+cat <<EOF > /etc/consul/service.hcl
+services {
+    id   = "emojify-cache"
+    name = "emojify-cache"
+    port = 9090
+
+    connect {
+        sidecar_service {
+            port = 20000
+
+            proxy {
+                local_service_address = "127.0.0.1"
+                local_service_port = 9090
+            }
+        }
+    }                                                                             
+}
+EOF
+
+cat <<EOF > /etc/consul/statsd.hcl
+services {
+  name = "statsd-exporter"
+  port = 9102
+
+  tags = ["scrape"]
+
+  meta {
+    service = "emojify-cache"
+  }
+}
+EOF
+
+/usr/local/bin/consul reload
+
+/usr/bin/supervisorctl start envoy

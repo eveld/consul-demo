@@ -1,0 +1,16 @@
+#!/bin/bash
+RUNNING=$(supervisorctl status | grep RUNNING | wc -l)
+if [ $RUNNING -ne 2 ]; then 
+    fail-message "Not all services are running on the consul-1 node"
+    exit 1
+fi
+
+exit 0
+
+MEMBERS=$(consul members | grep alive | wc -l)
+if [ $RUNNING -ne 8 ]; then 
+    fail-message "Not all nodes have joined the Consul cluster"
+    exit 1
+fi
+
+exit 0

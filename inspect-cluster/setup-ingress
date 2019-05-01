@@ -1,0 +1,46 @@
+#!/bin/bash
+cat <<EOF > /etc/consul/service.hcl
+services {
+    id   = "emojify-ingress"
+    name = "emojify-ingress"
+    port = 80
+
+    connect {
+        sidecar_service {
+            port = 20000
+
+            proxy {
+                local_service_address = "127.0.0.1"
+                local_service_port = 80
+
+                upstreams {
+                    destination_name = "emojify-website"                                                                   
+                    local_bind_port = 8000
+                }
+
+                upstreams {
+                    destination_name = "emojify-api"                                                                   
+                    local_bind_port = 8001
+                }
+            }
+        }
+    }
+}
+EOF
+
+cat <<EOF > /etc/consul/statsd.hcl
+services {
+  name = "statsd-exporter"
+  port = 9102
+
+  tags = ["scrape"]
+
+  meta {
+    service = "emojify-ingress"
+  }
+}
+EOF
+
+/usr/local/bin/consul reload
+
+/usr/bin/supervisorctl start envoy

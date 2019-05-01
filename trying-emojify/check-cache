@@ -1,0 +1,8 @@
+#!/bin/bash
+FILES=$(ls /files/ | wc -l)
+if [ $FILES -le 1 ]; then
+    fail-message "There were no successful calls to the Emojify service. Try submitting an image in the Emojify tab."
+    exit 1
+fi
+
+exit 0
