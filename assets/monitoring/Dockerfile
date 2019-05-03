@@ -38,6 +38,7 @@ COPY --from=1 /usr/share/prometheus/console_libraries /usr/share/prometheus/cons
 
 RUN ln -s /usr/share/prometheus/console_libraries /usr/share/prometheus/consoles/ /etc/prometheus/
 
+COPY monitoring/grafana.ini /etc/grafana/
 COPY monitoring/prometheus.yml /etc/prometheus/
 
 ENTRYPOINT ["/usr/bin/supervisord"]

@@ -1,20 +1,35 @@
-slug: consul-demo
+slug: consul-l7-observability
 id: 8wyatk2hvuyx
 type: track
 title: Service Mesh Observability
 teaser: L7 Observability into your Service Mesh with Consul Connect
-description: "By default Envoy is only going to operate on L4, while that may be useful
-  we will not see rich information which will enhance our awareness of our systems
-  stability.\n\nFor example, with L4 we will see requests but only success or failure,
-  and a failure is only going to be reported if a connection is terminated unexpectedly.
-  When your APIs or websites are reporting failures they will almost always terminate
-  the request correctly. What they are actually doing is using L7 and the HTTP protocol,
-  this carries with it HTTP status codes which indicate the real status of the request.
-  You will return a status 200 when a request is successful, a 404 if something is
-  not found, and 5xx when the service has an unexpected error. \n\nMonitoring these
-  codes is essential to understanding your application, however you need to enable
-  some additional configuration in Envoy so that it understands that your app is talking
-  L7."
+description: "One of the key benefits of adopting a Service Mesh is that the fleet
+  of sidecar proxies provide a uniform and consistent view of metrics, tracing and
+  logging of all the services, irrespective of different programming languages and
+  frameworks used by different teams. \n\nMany failures in microservices occur during
+  service interactions so a view into those transactions helps teams understand the
+  impact on the application better. Since the sidecar proxy is present at every network
+  hop, it captures both upstream and downstream communication and consequently, the
+  Service Mesh provides complete visibility into the external performance of all the
+  services.\n\nConsul forms the management layer of the Service Mesh, which simplifies
+  the configuration of sidecar proxies for secure traffic communication and telemetry
+  collection. \nConsul is built to support a variety of proxies as sidecars. Envoy’s
+  lightweight footprint and observability support make it a preferred sidecar in production
+  deployments.\n\nConsul 1.5 introduced a new discovery phase into the `consul connect
+  envoy` command that fetches the centrally stored proxy configuration from the local
+  agent, and bootstraps the Envoy proxy.\n\nOnce Envoy is bootstrapped, the listeners
+  need to be configured correctly to get useful metrics. By default Envoy is only
+  going to operate on L4, while that may be useful we will not see rich information
+  which will enhance our awareness of our systems stability.\n\nFor example, with
+  L4 we will see requests but only success or failure, and a failure is only going
+  to be reported if a connection is terminated unexpectedly. When your APIs or websites
+  are reporting failures they will almost always terminate the request correctly.
+  What they are actually doing is using L7 and the HTTP protocol, this carries with
+  it HTTP status codes which indicate the real status of the request. You will return
+  a status 200 when a request is successful, a 404 if something is not found, and
+  5xx when the service has an unexpected error. \n\nMonitoring these codes is essential
+  to understanding your application, however you need to enable some additional configuration
+  in Envoy so that it understands that your app is talking L7."
 icon: https://storage.googleapis.com/instruqt-frontend/assets/hashicorp/tracks/consul.png
 tags:
 - connect
@@ -24,7 +39,6 @@ tags:
 owner: hashicorp
 developers:
 - jackson.nic@gmail.com
-- todd@hashicorp.com
 - eveld@hashicorp.com
 private: false
 published: true
@@ -43,49 +57,49 @@ challenges:
     running properly, hit **check** to proceed."
   notes:
   - type: text
-    contents: "Please wait while we create your **sandboxed environment**. \n\nThis
-      environment will be populated with a 3 node **Consul cluster** and a **three-tier
-      application** that is connected and secured with a **Service Mesh**."
+    contents: |-
+      Please wait while we create your **sandboxed environment**. This should take around **40 seconds** to complete.
+
+      This environment will be populated with a 3 node **Consul cluster** and 5 other nodes that will be running our **three-tier application** and Consul agents.
   - type: text
-    contents: "The three-tier application consists of **5 components**:\n\n1. **Ingress**
-      - The proxy that routes all traffic to / to the website and /api to the API
-      server.\n\n2. **Website** - The frontend application.\n\n3. **API** - The service
-      that checks if an image is available in cache, or calls the facebox service
-      to emojify the image. \n\n4. **Cache** - A cache service that stores emojified
-      images.\n\n5. **Facebox** - The service that detects faces and places emoji's
-      on them."
+    contents: In this track, we will be configuring **Consul Connect** and **Envoy**
+      to send L7 metrics to **Prometheus** and then create dashboards in **Grafana**
+      to view them.
   - type: text
     contents: |-
-      We will be configuring **Consul Connect** and **Envoy** to send L7 metrics to **Prometheus** and then create dashboards in **Grafana** to view them.
+      Show how the architecture for consul is set up in this track.
 
-      To learn more about Consul Connect and it's internals, watch the **video** in the next note.
+      3 node cluster (3 servers)
+      5 nodes as agents/clients
+
+      To learn more about Consul Connect and it's internals, you can watch the **video** in the next note.
   - type: video
-    url: https://www.youtube.com/embed/KZIu33sbwQQ
+    url: https://www.youtube.com/embed/8T8t4-hQY74?modestbranding=1&rel=0
   tabs:
+  - title: Consul 1
+    type: terminal
+    hostname: consul-1
+  - title: Consul 2
+    type: terminal
+    hostname: consul-2
   - title: Consul 3
     type: terminal
     hostname: consul-3
+  - title: api
+    type: terminal
+    hostname: api
   - title: cache
     type: terminal
     hostname: cache
   - title: facebox
     type: terminal
     hostname: facebox
-  - title: website
-    type: terminal
-    hostname: website
-  - title: api
-    type: terminal
-    hostname: api
   - title: ingress
     type: terminal
     hostname: ingress
-  - title: Consul 2
+  - title: website
     type: terminal
-    hostname: consul-2
-  - title: Consul 1
-    type: terminal
-    hostname: consul-1
+    hostname: website
   difficulty: basic
   timelimit: 600
 - slug: trying-emojify
@@ -107,7 +121,10 @@ challenges:
   - type: text
     contents: see the service status in consul
   - type: text
-    contents: sidecar proxies also registered in consul with health
+    contents: |-
+      sidecar proxies also registered in consul with health
+
+      when waiting for the sidecars to become healthy, check out auto-reload settings to auto refresh.
   tabs:
   - title: Consul UI
     type: service
@@ -245,17 +262,34 @@ challenges:
   teaser: explore
   assignment: Explore
   tabs:
+  - title: Website
+    type: terminal
+    hostname: website
   - title: Grafana
     type: service
     hostname: monitoring
+    path: /d/eaX-0rzWz/overview
     port: 3000
-  - title: Shell
-    type: terminal
-    hostname: monitoring
-  - title: Prometheus
+  - title: Consul UI
     type: service
-    hostname: monitoring
-    port: 9090
+    hostname: consul-1
+    path: /ui/
+    port: 8500
+  - title: API
+    type: terminal
+    hostname: api
+  - title: Cache
+    type: terminal
+    hostname: cache
+  - title: Facebox
+    type: terminal
+    hostname: facebox
+  - title: Load test
+    type: terminal
+    hostname: load-test
+  - title: Ingress
+    type: terminal
+    hostname: ingress
   difficulty: basic
   timelimit: 25000
-checksum: "3490131684617257192"
+checksum: "9270980528523854658"

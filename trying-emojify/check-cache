@@ -1,6 +1,7 @@
 #!/bin/bash
-FILES=$(ls /files/ | wc -l)
-if [ $FILES -le 1 ]; then
+FIRST=$(echo -n "https://i.ytimg.com/vi/qlwp0mHFLHU/maxresdefault.jpg" | md5sum | awk '{print $1}')
+SECOND=$(echo -n $FIRST | md5sum | awk '{print $1}')
+if [ ! -f /files/$SECOND ]; then 
     fail-message "There were no successful calls to the Emojify service. Try submitting an image in the Emojify tab."
     exit 1
 fi

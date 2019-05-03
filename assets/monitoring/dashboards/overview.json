@@ -780,7 +780,7 @@
         }
       }
     ],
-    "refresh": false,
+    "refresh": "5s",
     "schemaVersion": 18,
     "style": "dark",
     "tags": [],
@@ -788,8 +788,8 @@
       "list": []
     },
     "time": {
-      "from": "2019-05-01T13:13:15.778Z",
-      "to": "2019-05-01T13:14:59.262Z"
+      "from": "now-30m",
+      "to": "now"
     },
     "timepicker": {
       "refresh_intervals": [
