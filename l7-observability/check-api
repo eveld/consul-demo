@@ -1,3 +1,4 @@
+#!/bin/bash
 HTTP=$(cat /etc/consul/service.hcl  | grep "\"http\"" | wc -l)
 GRPC=$(cat /etc/consul/service.hcl  | grep "\"grpc\"" | wc -l)
 
