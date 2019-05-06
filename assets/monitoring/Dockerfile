@@ -2,7 +2,7 @@ FROM grafana/grafana:6.1.4
 FROM prom/prometheus:v2.9.2
 FROM alpine
 
-RUN apk add --update bash supervisor curl vim
+RUN apk add --update bash supervisor curl vim jq
 RUN sed -i 's/\/bin\/ash/\/bin\/bash/g' /etc/passwd
 
 RUN mkdir -p /etc/supervisor.d/

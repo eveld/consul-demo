@@ -1,7 +1,7 @@
 FROM prom/statsd-exporter:latest
 FROM nicholasjackson/emojify-api:v0.9.8
 
-RUN apk add --update bash supervisor curl vim
+RUN apk add --update bash supervisor curl vim jq
 RUN sed -i 's/\/bin\/ash/\/bin\/bash/g' /etc/passwd
 
 RUN mkdir -p /etc/supervisor.d/

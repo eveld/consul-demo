@@ -35,21 +35,24 @@ challenges:
   notes:
   - type: text
     contents: |-
-      Please wait while we create your **sandboxed environment**. This should take around **40 seconds** to complete.
+      Please wait while we create your **sandboxed environment**. This can take up to **a minute** to complete.
 
       This environment will be populated with a 3 node **Consul cluster** and 5 other nodes that will be running a **three-tier application** and Consul agents.
   - type: text
-    contents: "In this track you will be configuring a Service Mesh managed by Consul
-      Connect to send L7 metrics to Prometheus. \n\nYou will then create dashboards
-      in **Grafana** to view these metrics."
+    contents: |-
+      In this track you will be **configuring a Service Mesh** managed by **Consul Connect** to send L7 metrics to Prometheus.
+
+      You will then **create dashboards** in Grafana to view these metrics.
   - type: text
-    contents: "When applications are broken down into separate (micro)services, visibility
-      into these services can be hard to achieve. \n\nA single transaction can flow
-      through a number of independently deployed services being developed and deployed
-      by different teams."
+    contents: "When applications are broken down into separate (micro)services, **visibility**
+      into these services can be **hard to achieve**. \n\nA **single transaction**
+      can flow through **a number of independently deployed services** being developed
+      and deployed by different teams."
   - type: text
     contents: |-
-      A Service Mesh alleviates this problem by providing a networking infrastructure that leverages "sidecar" proxies for microservice deployments.
+      A Service Mesh alleviates this problem by providing a **networking infrastructure** that leverages **"sidecar" proxies** for microservice deployments.
+
+      ![Sidecar Proxies]()
 
       To learn more about Consul Connect and it's internals, you can watch the **video** in the next note.
   - type: video
@@ -91,6 +94,9 @@ challenges:
 
     As soon as all the services and the sidecar proxies are healthy, the Emojify application will work.
 
+    You can enable automatic refreshing of the services by going to the Settings page and enabling **Blocking Queries**.
+
+
     Then try out the Emojify application by emojifying the following picture.
     ```
     https://emojify.today/pictures/1.jpg
@@ -101,6 +107,8 @@ challenges:
       We will be using Emojify to show how to configure the Service Mesh Observability features of Consul Connect.
 
       Emojify is an application that accepts a URL to an image, detects any faces in the image and then replaces them with emoji's.
+
+      ![Emojify]()
   - type: text
     contents: |-
       Emojify consists of 5 micro-services that are communicating via a Service Mesh.
@@ -108,9 +116,9 @@ challenges:
       ![Emojify Architecture]()
   - type: text
     contents: |-
-      ![gif!](https://storage.googleapis.com/instruqt-hashicorp-tracks/animation.gif)
+      To inspect the Service mesh, take a look at the Consul UI where you can see the registered services with accompanying sidecar proxies, and the defined upstreams for each proxy.
 
-      To inspect the Service mesh, take a look at the Consul UI where you can see the registered services with accompanying sidecar proxies and the defined upstreams for each proxy.
+      ![gif!](https://storage.googleapis.com/instruqt-hashicorp-tracks/animation.gif)
   tabs:
   - title: Consul UI
     type: service
@@ -144,47 +152,61 @@ challenges:
   title: Getting insights
   teaser: Get L3/L4 observability for our services.
   assignment: "In order to configure the metrics for each of the sidecar proxies,
-    we will create a Centralized Configuration.\n\nUpdate the file `/etc/consul/proxy.hcl`
+    we will create a centralized configuration.\n\nUpdate the file `/etc/consul/proxy.hcl`
     with the following contents.\n```\nkind = \"proxy-defaults\"\nname = \"global\"\n\nconfig
     {\n  envoy_dogstatsd_url = \"udp://127.0.0.1:9125\"\n}\n```\n\nThen write the
-    configuration to the Centralized Configuration.\n```\nconsul config write proxy.hcl\n```\n\nThis
+    configuration to the centralized configuration.\n```\nconsul config write proxy.hcl\n```\n\nThis
     configuration will get picked up by all the Consul agents automatically and added
     to any proxies that get bootstrapped by Consul.\n\nIn order for the new Envoy
     configuration to be generated we have to restart the proxy by running the following
     command.\n\n```\nconsul connect envoy -sidecar-for emojify-api\n```\n\nOnce the
     service definition is reloaded and the Envoy proxy has restarted, metrics should
     start coming in to Prometheus and Grafana.\n\nIn the explore view of Grafana add
-    the query:\n```\nrate(envoy_cluster_internal_upstream_rq{local_cluster=\"emojify-api\"}[30s])\n```
-    \n\nWhen you run the query, a graph should appear (it can take a few seconds for
-    metrics to be aggregated)."
+    the query:\n```\nrate(envoy_cluster_internal_upstream_rq {local_cluster=\"emojify-api\"}
+    [30s])\n``` \n\nWhen you run the query, a graph should appear (it can take a few
+    seconds for metrics to be aggregated)."
   notes:
   - type: text
-    contents: One of the key benefits of adopting a Service Mesh is that the fleet
-      of sidecar proxies provide a uniform and consistent view of metrics, tracing
+    contents: One of the **key benefits** of adopting a Service Mesh is that the fleet
+      of sidecar proxies provide a **uniform and consistent view** of metrics, tracing
       and logging of all the services, irrespective of different programming languages
       and frameworks used by different teams.
   - type: text
-    contents: Since the sidecar proxy is present at every network hop, it captures
-      both upstream and downstream communication and consequently, the Service Mesh
+    contents: Since the sidecar proxy is present at every network hop, it **captures
+      both upstream and downstream communication** and consequently, the Service Mesh
       provides complete visibility into the external performance of all the services.
   - type: text
-    contents: 'Consul forms the management layer of the Service Mesh, which simplifies
+    contents: "Consul forms the management layer of the Service Mesh, which simplifies
       the configuration of sidecar proxies for secure traffic communication and telemetry
-      collection. '
+      collection. \n\nConsul 1.5 introduced a new discovery phase into the `consul
+      connect envoy` command, that fetches the **centrally stored proxy configuration**
+      from the local agent.\n\nConsul will use this configuration to **generate the
+      bootstrap configuration** that Envoy needs to setup the proxy. To view the bootstrap
+      configuration that Consul Connect generates, run the following command.\n\n```\nconsul
+      connect envoy -sidecar-for <service> -bootstrap\n```"
   - type: text
-    contents: "Consul 1.5 introduced a new discovery phase into the `consul connect
-      envoy` command that fetches the centrally stored proxy configuration \nfrom
-      the local agent, and bootstraps the Envoy proxy.\n\nConsul will use this configuration
-      to generate the bootstrap configuration that Envoy needs to setup the proxy
-      and configure the sinks."
-  - type: text
-    contents: To get insights in how the services are performing, we need to add a
-      metrics sink to the Envoy bootstrap configuration.
+    contents: |-
+      To get insights in how the services are performing, we need to add a metrics sink to the Envoy bootstrap configuration.
+
+      ```
+      kind = "proxy-defaults"
+       name = "global"
+
+       config {
+          # envoy_statsd_url = "udp://127.0.0.1:9125"
+          # prometheus_bind_addr = "0.0.0.0:9102"
+          envoy_dogstatsd_url = "udp://127.0.0.1:9125"
+          envoy_stats_tags = ["http", "api", "emojify"]
+          envoy_stats_flush_interval = 10
+       }
+      ```
+
+      Which can then be written to Consul using `consul config write <file>`
   tabs:
   - title: Editor
     type: code
     hostname: api
-    path: /etc/consul/service.hcl
+    path: /root/proxy.hcl
   - title: API
     type: terminal
     hostname: api
@@ -200,40 +222,25 @@ challenges:
   type: challenge
   title: L7 observability
   teaser: Add L7 observability
-  assignment: |-
-    To get more insight into how our services are performing, and get more useful metrics, we will enable L7 observability metrics in Envoy.
-
-    To do this, we need to configure the `protocol` field of the proxy the upstreams. e.g.
-
-    ```
-    proxy {
-        ...
-        config {
-            ...
-            protocol = "http"
-        }
-    }
-
-    upstreams {
-        ...
-        protocol = "http"
-    }
-    ```
-
-    Set the protocol of the API proxy to "http", the upstream of emojify-facebox to "http" and the upstream of emojify-cache to "grpc".
-
-    When we set the protocol field to `http` or `grpc`, Envoy will start emitting L7 metrics.
+  assignment: "To get more insight into how our services are performing, and get more
+    useful metrics, we will enable L7 observability metrics in Envoy.\n\nTo do this,
+    we need to configure the `protocol` field of the proxy the upstreams. e.g.\n\n```\nproxy
+    {\n    ...\n    config {\n        ...\n        protocol = \"http\"\n    }\n}\n\nupstreams
+    {\n    ...\n    config {\n        protocol = \"http\"\n    }\n}\n```\n\nSet the
+    protocol of the API proxy to \"http\", the upstream of **emojify-facebox** to
+    `http` and the upstream of **emojify-cache** to `grpc`.\n\nSubmit the new config
+    to Consul by running `consul reload`.\n\nThen start the Envoy proxy by running:\n`consul
+    connect envoy -sidecar-for emojify-api`.\n\nWhen we set the protocol field to
+    \"http\" or \"grpc\", Envoy will start emitting L7 metrics.\n\nIn the explore
+    view of Grafana add the query:\n```\nsum(increase(envoy_cluster_upstream_rq_xx
+    [30s])) by (envoy_response_code_class)\n``` \n\nWhen you run the query, a graph
+    should appear (it can take a few seconds for metrics to be aggregated)."
   notes:
   - type: text
-    contents: Once Envoy is bootstrapped, the listeners need to be configured correctly
-      to get useful metrics. By default Envoy is only going to operate on L4, while
-      that may be useful we will not see rich information which will enhance our awareness
-      of our systems stability.
-  - type: text
-    contents: For example, with L4 we will see requests but only success or failure,
-      and a failure is only going to be reported if a connection is terminated unexpectedly.
-      When your APIs or websites are reporting failures they will almost always terminate
-      the request correctly.
+    contents: |-
+      By default Envoy is only going to operate on L4, while that may be useful we will not see rich information which will enhance our awareness of our systems stability.
+
+      For example, with L4 we will see requests but only success or failure, and a failure is only going to be reported if a connection is terminated unexpectedly. When your APIs or websites are reporting failures they will almost always terminate the request correctly.
   - type: text
     contents: "What they are actually doing is using L7 and the HTTP protocol, this
       carries with it HTTP status codes which indicate the real status of the request.
@@ -319,4 +326,4 @@ challenges:
     hostname: website
   difficulty: basic
   timelimit: 1800
-checksum: "7122033438200476138"
+checksum: "9201629837967550342"

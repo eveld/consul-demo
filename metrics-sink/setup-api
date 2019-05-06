@@ -1,0 +1,3 @@
+#!/bin/bash
+killall envoy
+touch /root/proxy.hcl

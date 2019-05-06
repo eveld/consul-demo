@@ -1,0 +1,14 @@
+#!/bin/bash
+LINES=$(cat /root/proxy.hcl | wc -l)
+if [ $LINES -lt 5 ]; then
+    fail-message "The proxy.hcl file does not contain the correct configuration."
+    exit 1
+fi
+
+URL=$(consul config read -kind=proxy-defaults -name=global | jq -r .Config.envoy_dogstatsd_url)
+if [ "$URL" != "udp://127.0.0.1:9125" ]; then
+    fail-message "Could not read the correct envoy_dogstatsd_url value from the central config"
+    exit 1
+fi
+
+exit 0
