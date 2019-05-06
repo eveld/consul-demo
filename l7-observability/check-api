@@ -1,0 +1,9 @@
+HTTP=$(cat /etc/consul/service.hcl  | grep "\"http\"" | wc -l)
+GRPC=$(cat /etc/consul/service.hcl  | grep "\"grpc\"" | wc -l)
+
+if [ $HTTP -ne 2 -o $GRPC -ne 1 ] ; then
+    fail-message "Did not find the correct protocol settings on the proxy and the two upstreams"
+    exit 1
+fi
+
+exit 0

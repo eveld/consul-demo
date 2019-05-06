@@ -1,0 +1,8 @@
+#!/bin/bash
+RESULTS=$(curl -s monitoring:9090/api/v1/query?query="sum(increase(envoy_http_downstream_rq_xx[30s]))by(envoy_response_code_class)" | jq -r '.data.result | length')
+if [ $RESULTS -eq 0 ]; then
+    fail-message "Did not receive any metrics from Envoy yet. Did you configure and start the proxy?"
+    exit 1
+fi
+
+exit 0
