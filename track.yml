@@ -232,9 +232,9 @@ challenges:
     to Consul by running `consul reload`.\n\nThen start the Envoy proxy by running:\n`consul
     connect envoy -sidecar-for emojify-api`.\n\nWhen we set the protocol field to
     \"http\" or \"grpc\", Envoy will start emitting L7 metrics.\n\nIn the explore
-    view of Grafana add the query:\n```\nsum(increase(envoy_cluster_upstream_rq_xx
-    [30s])) by (envoy_response_code_class)\n``` \n\nWhen you run the query, a graph
-    should appear (it can take a few seconds for metrics to be aggregated)."
+    view of Grafana add the query:\n```\nsum(rate(envoy_http_downstream_rq_xx [30s]))
+    by (envoy_response_code_class)\n``` \n\nWhen you run the query, a graph should
+    appear (it can take a few seconds for metrics to be aggregated)."
   notes:
   - type: text
     contents: |-
@@ -326,4 +326,4 @@ challenges:
     hostname: website
   difficulty: basic
   timelimit: 1500
-checksum: "5836289074879307517"
+checksum: "921553359065793696"

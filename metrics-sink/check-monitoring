@@ -1,4 +1,5 @@
 #!/bin/bash
+
 RESULTS=$(curl -s monitoring:9090/api/v1/query?query="envoy_cluster_internal_upstream_rq" | jq -r '.data.result | length')
 if [ $RESULTS -eq 0 ]; then
     fail-message "Did not receive any metrics from Envoy yet. Did you configure and start the proxy?"
