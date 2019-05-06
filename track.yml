@@ -17,7 +17,7 @@ owner: hashicorp
 developers:
 - jackson.nic@gmail.com
 - eveld@hashicorp.com
-private: false
+private: true
 published: true
 challenges:
 - slug: inspect-cluster
@@ -26,7 +26,7 @@ challenges:
   title: Inspecting the cluster
   teaser: Make sure everything is running properly.
   assignment: "In one of the terminals, check if the cluster has been formed correctly
-    by running `consul members`.\n\nThere should be 8 nodes with status **alive**:
+    by running `consul members`.\n\n\nThere should be 8 nodes with status **alive**:
     \  \n1. consul-1   \n2. consul-2   \n3. consul-3   \n4. api   \n5. cache   \n6.
     facebox   \n7. ingress   \n8. website   \n\nIf for some reason one of the nodes
     did not come up, check if supervisord has started all services correctly by running
@@ -80,18 +80,21 @@ challenges:
     type: terminal
     hostname: website
   difficulty: basic
-  timelimit: 600
+  timelimit: 300
 - slug: trying-emojify
   id: 8xlczufueorq
   type: challenge
   title: Emojifying
   teaser: Try out the Emojify application.
   assignment: |-
-    As soon as all the services and the sidecar proxies are healthy, the Emojify application should work.
-
     Check out the Consul UI to check if the sidecar proxy for each of the Emojify services is up and running.
 
-    Then try out the Emojify application by emojify-ing `https://i.ytimg.com/vi/qlwp0mHFLHU/maxresdefault.jpg`.
+    As soon as all the services and the sidecar proxies are healthy, the Emojify application will work.
+
+    Then try out the Emojify application by emojifying the following picture.
+    ```
+    https://emojify.today/pictures/1.jpg
+    ```
   notes:
   - type: text
     contents: |-
@@ -99,22 +102,15 @@ challenges:
 
       Emojify is an application that accepts a URL to an image, detects any faces in the image and then replaces them with emoji's.
   - type: text
-    contents: Emojify consists of 5 micro-services that are communicating via a Service
-      Mesh.
-  - type: text
-    contents: 'One of the key benefits of adopting a Service Mesh is that the fleet
-      of sidecar proxies provide a uniform and consistent view of metrics, tracing
-      and logging of all the services, irrespective of different programming languages
-      and frameworks used by different teams. '
-  - type: text
     contents: |-
-      sidecar proxies also registered in consul with health
+      Emojify consists of 5 micro-services that are communicating via a Service Mesh.
 
-      when waiting for the sidecars to become healthy, check out auto-reload settings to auto refresh.
+      ![Emojify Architecture]()
   - type: text
     contents: |-
       ![gif!](https://storage.googleapis.com/instruqt-hashicorp-tracks/animation.gif)
-      Look at awesomeness
+
+      To inspect the Service mesh, take a look at the Consul UI where you can see the registered services with accompanying sidecar proxies and the defined upstreams for each proxy.
   tabs:
   - title: Consul UI
     type: service
@@ -147,48 +143,43 @@ challenges:
   type: challenge
   title: Getting insights
   teaser: Get L3/L4 observability for our services.
-  assignment: "To get insights in how the services are performing, we need to add
-    a metrics sink to the Envoy bootstrap configuration.\n\nIn order for each of the
-    sidecar proxies to get the configuration, we will create a Centralized Configuration.\n\nCreate
-    a file `proxy.hcl` with the following contents.\n```\nkind = \"proxy-defaults\"\nname
-    = \"global\"\n\nconfig {\n  envoy_dogstatsd_url = \"udp://127.0.0.1:9125\"\n}\n```\n\nThen
-    write the configuration to the Centralized Configuration.\n```\nconsul config
-    write proxy.hcl\n```\n\nThis configuration will get picked up by all the Consul
-    agents automatically and added to any proxies that get bootstrapped by Consul.\n\nIn
-    order for the new Envoy configuration to be generated we have to restart the proxy
-    by running the following command.\n```\nsupervisorctl restart envoy\n\n# consul
-    connect envoy \\\n#  -sidecar-for emojify-api\n```\n\nOnce the service definition
-    is reloaded and the Envoy proxy has restarted, metrics should start coming in
-    to Prometheus and Grafana. To check the metrics, go to the Grafana tab and on
-    the Explore page, and log in with admin/admin.\n\nThen in the explore tab add
+  assignment: "In order to configure the metrics for each of the sidecar proxies,
+    we will create a Centralized Configuration.\n\nUpdate the file `/etc/consul/proxy.hcl`
+    with the following contents.\n```\nkind = \"proxy-defaults\"\nname = \"global\"\n\nconfig
+    {\n  envoy_dogstatsd_url = \"udp://127.0.0.1:9125\"\n}\n```\n\nThen write the
+    configuration to the Centralized Configuration.\n```\nconsul config write proxy.hcl\n```\n\nThis
+    configuration will get picked up by all the Consul agents automatically and added
+    to any proxies that get bootstrapped by Consul.\n\nIn order for the new Envoy
+    configuration to be generated we have to restart the proxy by running the following
+    command.\n\n```\nconsul connect envoy -sidecar-for emojify-api\n```\n\nOnce the
+    service definition is reloaded and the Envoy proxy has restarted, metrics should
+    start coming in to Prometheus and Grafana.\n\nIn the explore view of Grafana add
     the query:\n```\nrate(envoy_cluster_internal_upstream_rq{local_cluster=\"emojify-api\"}[30s])\n```
-    \n\nWhen you run the query, a graph should appear."
+    \n\nWhen you run the query, a graph should appear (it can take a few seconds for
+    metrics to be aggregated)."
   notes:
   - type: text
-    contents: What is observability?
+    contents: One of the key benefits of adopting a Service Mesh is that the fleet
+      of sidecar proxies provide a uniform and consistent view of metrics, tracing
+      and logging of all the services, irrespective of different programming languages
+      and frameworks used by different teams.
   - type: text
-    contents: what kind of insights do you get with envoy?
+    contents: Since the sidecar proxy is present at every network hop, it captures
+      both upstream and downstream communication and consequently, the Service Mesh
+      provides complete visibility into the external performance of all the services.
   - type: text
-    contents: |-
-      what are:
-
-      cluster
-
-      listener
-
-      connection
-
-      request
+    contents: 'Consul forms the management layer of the Service Mesh, which simplifies
+      the configuration of sidecar proxies for secure traffic communication and telemetry
+      collection. '
   - type: text
-    contents: |-
-      upstream
-
-      downstream
+    contents: "Consul 1.5 introduced a new discovery phase into the `consul connect
+      envoy` command that fetches the centrally stored proxy configuration \nfrom
+      the local agent, and bootstraps the Envoy proxy.\n\nConsul will use this configuration
+      to generate the bootstrap configuration that Envoy needs to setup the proxy
+      and configure the sinks."
   - type: text
-    contents: |-
-      logging architecture with statsd sidecar sending metrics to prometheus
-
-      displayed in grafana
+    contents: To get insights in how the services are performing, we need to add a
+      metrics sink to the Envoy bootstrap configuration.
   tabs:
   - title: Editor
     type: code
@@ -203,59 +194,104 @@ challenges:
     path: /explore?left=["now-5m","now","Prometheus",{},{"ui":[true,true,true,"none"]}]
     port: 3000
   difficulty: basic
-  timelimit: 1200
+  timelimit: 600
 - slug: l7-observability
   id: wbx9gp1ilkmd
   type: challenge
   title: L7 observability
   teaser: Add L7 observability
   assignment: |-
-    To get more insight into how our services are performing, we will enable L7 observability metrics in Envoy.
+    To get more insight into how our services are performing, and get more useful metrics, we will enable L7 observability metrics in Envoy.
 
-    To do this, we need to add the `protocol` field to the `proxy config` and create a `config` block with the `protocol` field in each of the `upstreams`.
+    To do this, we need to configure the `protocol` field of the proxy the upstreams. e.g.
 
-    When we set the protocol field to `http`, Envoy will start emitting L7 metrics.
+    ```
+    proxy {
+        ...
+        config {
+            ...
+            protocol = "http"
+        }
+    }
+
+    upstreams {
+        ...
+        protocol = "http"
+    }
+    ```
+
+    Set the protocol of the API proxy to "http", the upstream of emojify-facebox to "http" and the upstream of emojify-cache to "grpc".
+
+    When we set the protocol field to `http` or `grpc`, Envoy will start emitting L7 metrics.
   notes:
   - type: text
-    contents: difference between L3/4 and L7
+    contents: Once Envoy is bootstrapped, the listeners need to be configured correctly
+      to get useful metrics. By default Envoy is only going to operate on L4, while
+      that may be useful we will not see rich information which will enhance our awareness
+      of our systems stability.
   - type: text
-    contents: Why are L7 metrics useful?
+    contents: For example, with L4 we will see requests but only success or failure,
+      and a failure is only going to be reported if a connection is terminated unexpectedly.
+      When your APIs or websites are reporting failures they will almost always terminate
+      the request correctly.
   - type: text
-    contents: How to enable L7 metrics?
+    contents: "What they are actually doing is using L7 and the HTTP protocol, this
+      carries with it HTTP status codes which indicate the real status of the request.
+      You will return a status 200 when a request is successful, a 404 if something
+      is not found, and 5xx when the service has an unexpected error. \n\nMonitoring
+      these codes is essential to understanding your application, however you need
+      to enable some additional configuration in Envoy so that it understands that
+      your app is talking L7."
   - type: text
-    contents: What metrics does Envoy send on L7?
+    contents: |-
+      what is grpc?
+      grpc also uses status codes.
+  - type: text
+    contents: |-
+      The `config` section of both `proxy` and `upstreams` can now specify a protocol field, which if it is "http" will cause the listener to emit L7 metrics.
+
+      ```
+      proxy {
+          ...
+          config {
+              ...
+              protocol = "http"
+          }
+      }
+
+      upstreams {
+          ...
+          protocol = "http"
+      }
+      ```
   tabs:
-  - title: API
-    type: terminal
-    hostname: api
   - title: Editor
     type: code
     hostname: api
     path: /etc/consul/service.hcl
+  - title: API
+    type: terminal
+    hostname: api
   - title: Grafana
     type: service
     hostname: monitoring
     path: /explore?left=["now-5m","now","Prometheus",{},{"ui":[true,true,true,"none"]}]
     port: 3000
-  - title: Prometheus
-    type: terminal
-    hostname: monitoring
-  - title: Prom
-    type: service
-    hostname: monitoring
-    port: 9090
   difficulty: basic
-  timelimit: 12000
+  timelimit: 600
 - slug: explore
   id: 2oubohrpxlhw
   type: challenge
   title: Explore
   teaser: explore
-  assignment: Explore
+  assignment: Explore the dashboard and emitted metrics, or create a dashboard of
+    your own.
+  notes:
+  - type: text
+    contents: "Now you know how to configure the L7 Observability features of Consul
+      Connect. \n\nIn the following challenge we have set up all the components with
+      L7 Observability and created a dashboard containing some of the emitted metrics."
   tabs:
-  - title: Website
-    type: terminal
-    hostname: website
   - title: Grafana
     type: service
     hostname: monitoring
@@ -275,12 +311,12 @@ challenges:
   - title: Facebox
     type: terminal
     hostname: facebox
-  - title: Load test
-    type: terminal
-    hostname: load-test
   - title: Ingress
     type: terminal
     hostname: ingress
+  - title: Website
+    type: terminal
+    hostname: website
   difficulty: basic
-  timelimit: 25000
-checksum: "7553565716462090713"
+  timelimit: 1800
+checksum: "7122033438200476138"
