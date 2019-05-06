@@ -325,5 +325,5 @@ challenges:
     type: terminal
     hostname: website
   difficulty: basic
-  timelimit: 1800
-checksum: "8893547739506731375"
+  timelimit: 1500
+checksum: "5836289074879307517"
